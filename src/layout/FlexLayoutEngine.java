@@ -1,8 +1,8 @@
 
 package layout;
+
 import main.BaseComp;
 import style.StyleManager;
-
 
 public class FlexLayoutEngine extends BaseLayoutEngine {
     public FlexLayoutEngine() {
@@ -12,10 +12,16 @@ public class FlexLayoutEngine extends BaseLayoutEngine {
     public void doLayout(BaseComp c) {
         BaseComp[] children = c.getChildren();
         StyleManager s = c.getStyleManager();
+        if (children == null || s == null) {
+            return;
+        }
         boolean isColumnFlex = s.isColumnFlex();
         int gap = s.getGap();
         int current = 0;
         for (BaseComp child : children) {
+            if (child == null) {
+                continue;
+            }
             if (isColumnFlex) {
                 child.setBounds(0, current, child.getWidth(), child.getHeight());
                 current += child.getHeight() + gap;
@@ -24,6 +30,6 @@ public class FlexLayoutEngine extends BaseLayoutEngine {
                 current += child.getWidth() + gap;
             }
         }
-        
+
     }
 }

@@ -29,19 +29,22 @@ public class StyleManager {
         this.layoutEngine = createLayoutEngine(display);
 
     }
+
     public void setFlexProps(boolean isColumnFlex, int gap) {
         this.isColumnFlex = isColumnFlex;
         this.gap = gap;
     }
+
     public void setBlockProps(int gap) {
         this.gap = gap;
     }
+
     public void setGridProps(boolean isRowFirst, int numRows, int numCols) {
         this.isRowFirst = isRowFirst;
         this.numRows = numRows;
         this.numCols = numCols;
     }
-    
+
     public StyleManager(StyleManager parentStyle) {
         this.color = parentStyle.color;
         this.layoutEngine = createLayoutEngine("block");
@@ -52,14 +55,18 @@ public class StyleManager {
         return switch (display) {
             case "flex" -> new FlexLayoutEngine();
             case "block" -> new BlockLayoutEngine();
+            case "grid" -> new GridLayoutEngine();
+            case "absolute" -> new AbsoluteLayoutEngine();
             default -> new BaseLayoutEngine();
         };
     }
-    
+
     public void apply(Graphics g) {
         g.setColor(color);
-        if (borderRadius != 0) {
-            g.fillRoundRect(x, y, width, height, borderRadius, borderRadius);
+        if (borderRadius > 0) {
+            g.fillRoundRect(0, 0, width, height, borderRadius, borderRadius);
+        } else {
+            g.fillRect(0, 0, width, height);
         }
     }
 
@@ -68,13 +75,15 @@ public class StyleManager {
     }
 
     public Graphics createChildGraphics(BaseComp parent, BaseComp child, Graphics g) {
-        Graphics child_g = g.create();
-        return child_g;
+        // Translation is now handled in BaseComp.paintChildren
+        return g;
     }
 
-
-    public void manageInheritStylePropagation(BaseComp parent){
+    public void manageInheritStylePropagation(BaseComp parent) {
         BaseComp[] children = parent.getChildren();
+        if (children == null) {
+            return;
+        }
         for (BaseComp child : children) {
             useAsDefaultStyleIfNotSet(child, this);
         }
@@ -87,13 +96,11 @@ public class StyleManager {
         }
         StyleManager childStyle = child.getStyleManager();
 
-
         if (childStyle.color == null) {
             childStyle.color = parentStyle.color;
         }
-        
-    }
 
+    }
 
     public void setBounds(int x, int y, int width, int height) {
         this.x = x;
@@ -101,30 +108,39 @@ public class StyleManager {
         this.width = width;
         this.height = height;
     }
+
     public int getX() {
         return x;
     }
+
     public int getY() {
-        return y;  
+        return y;
     }
+
     public int getWidth() {
         return width;
     }
+
     public int getHeight() {
         return height;
     }
+
     public boolean isColumnFlex() {
         return isColumnFlex;
     }
+
     public int getGap() {
         return gap;
     }
+
     public boolean isRowFirst() {
         return isRowFirst;
     }
+
     public int getNumRows() {
         return numRows;
     }
+
     public int getNumCols() {
         return numCols;
     }

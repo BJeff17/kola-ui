@@ -38,4 +38,15 @@ public class DirtyManager {
 
     }
 
+    public boolean hasDirtyRegion() {
+        return dirtyRegion != null;
+    }
+
+    public void markAll(BaseComp root) {
+        if (root == null) {
+            return;
+        }
+        addDirtyRegion(0, 0, Math.max(1, root.getWidth()), Math.max(1, root.getHeight()));
+    }
+
 }

@@ -13,11 +13,7 @@ public class HitTester {
      */
 
     public boolean isHit(int x, int y, BaseComp c) {
-
-        return x >= c.getX() && x <= (c.getX() + c.getWidth()) &&
-
-                y >= c.getY() && y <= (c.getY() + c.getHeight());
-
+        return c != null && c.containsGlobalPoint(x, y);
     }
 
     /**
@@ -27,42 +23,24 @@ public class HitTester {
      */
 
     public BaseComp findBaseComp(int x, int y, BaseComp root) {
-
         if (root == null || !isHit(x, y, root)) {
-
             return null;
-
         }
 
-        int localX = x - root.getX();
-
-        int localY = y - root.getY();
-
         BaseComp[] children = root.getChildren();
-
         if (children != null && children.length > 0) {
-
             for (int i = children.length - 1; i >= 0; i--) {
-
                 BaseComp child = children[i];
-
                 if (child == null)
                     continue;
 
-                BaseComp target = findBaseComp(localX, localY, child);
-
+                BaseComp target = findBaseComp(x, y, child);
                 if (target != null) {
-
                     return target;
-
                 }
-
             }
-
         }
-
         return root;
-
     }
 
 }
