@@ -18,15 +18,27 @@ public class UiEvent {
     private final int screenX;
     private final int screenY;
     private final int button;
-    private final int wheelRotation;
+    private final double wheelRotation;
+    private final boolean shiftDown;
+    private final int clickCount;
+    private boolean propagationStopped;
     private BaseComp target;
     private BaseWindow window;
 
     public UiEvent(Type type, int x, int y, int screenX, int screenY, int button) {
-        this(type, x, y, screenX, screenY, button, 0);
+        this(type, x, y, screenX, screenY, button, 0.0, false, 1);
     }
 
-    public UiEvent(Type type, int x, int y, int screenX, int screenY, int button, int wheelRotation) {
+    public UiEvent(Type type, int x, int y, int screenX, int screenY, int button, double wheelRotation) {
+        this(type, x, y, screenX, screenY, button, wheelRotation, false, 1);
+    }
+
+    public UiEvent(Type type, int x, int y, int screenX, int screenY, int button, double wheelRotation, boolean shiftDown) {
+        this(type, x, y, screenX, screenY, button, wheelRotation, shiftDown, 1);
+    }
+
+    public UiEvent(Type type, int x, int y, int screenX, int screenY, int button, double wheelRotation,
+            boolean shiftDown, int clickCount) {
         this.type = type;
         this.x = x;
         this.y = y;
@@ -34,6 +46,17 @@ public class UiEvent {
         this.screenY = screenY;
         this.button = button;
         this.wheelRotation = wheelRotation;
+        this.shiftDown = shiftDown;
+        this.clickCount = Math.max(1, clickCount);
+        this.propagationStopped = false;
+    }
+
+    public boolean isShiftDown() {
+        return shiftDown;
+    }
+
+    public int getClickCount() {
+        return clickCount;
     }
 
     public Type getType() {
@@ -60,7 +83,7 @@ public class UiEvent {
         return button;
     }
 
-    public int getWheelRotation() {
+    public double getWheelRotation() {
         return wheelRotation;
     }
 
@@ -78,5 +101,13 @@ public class UiEvent {
 
     public void setWindow(BaseWindow window) {
         this.window = window;
+    }
+
+    public void stopPropagation() {
+        this.propagationStopped = true;
+    }
+
+    public boolean isPropagationStopped() {
+        return propagationStopped;
     }
 }

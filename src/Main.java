@@ -4,11 +4,18 @@ import components.Div;
 import components.H;
 import components.ImageComp;
 import components.Label;
+import components.SelectInput;
 import components.ScrollView;
+import components.TextAreaInput;
 import components.TextArea;
+import components.TextField;
 import event.UiEvent;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import main.BaseComp;
@@ -56,11 +63,21 @@ public class Main {
                 if (!isDragTarget(event.getTarget())) {
                     return;
                 }
+                if (dragging && event.getClickCount() >= 2) {
+                    dragging = false;
+                    dragArmed = false;
+                    app.finishDrag(this, event.getX(), event.getY());
+                    event.getWindow().releasePointer(this);
+                    event.stopPropagation();
+                    return;
+                }
                 dragArmed = true;
                 dragStartX = event.getX();
                 dragStartY = event.getY();
                 dragOffsetX = event.getX() - getGlobalX();
                 dragOffsetY = event.getY() - getGlobalY();
+                event.getWindow().capturePointer(this);
+                event.stopPropagation();
             });
 
             getEventManager().register(UiEvent.Type.POINTER_MOVE, (component, event) -> {
@@ -70,21 +87,25 @@ public class Main {
                         app.startDrag(this);
                     }
                 }
-                if (!dragging || event.getTarget() != this) {
+                if (!dragging) {
                     return;
                 }
                 app.moveDrag(this, event.getX() - dragOffsetX, event.getY() - dragOffsetY);
-                event.getWindow().requestRender();
+                event.getWindow().requestRenderIfNeeded();
+                event.stopPropagation();
             });
 
             getEventManager().register(UiEvent.Type.POINTER_UP, (component, event) -> {
                 dragArmed = false;
-                if (!dragging || event.getTarget() != this) {
+                if (!dragging) {
+                    event.getWindow().releasePointer(this);
                     return;
                 }
                 dragging = false;
                 app.finishDrag(this, event.getX(), event.getY());
-                event.getWindow().requestRender();
+                event.getWindow().releasePointer(this);
+                event.getWindow().requestRenderIfNeeded();
+                event.stopPropagation();
             });
         }
 
@@ -118,8 +139,11 @@ public class Main {
     private static class TaskColumn extends Div {
         private static final int PADDING = 12;
         private static final int GAP = 12;
+        private static final Color DROP_HIGHLIGHT_FILL = new Color(72, 153, 255, 48);
+        private static final Color DROP_HIGHLIGHT_STROKE = new Color(72, 153, 255, 185);
         private final ScrollView scroll;
         private final BaseComp list;
+        private boolean dropTargetActive;
 
         TaskColumn(String title, int x, int y, int width, int height) {
             super(x, y, width, height, new Color(245, 247, 250, 150), 16);
@@ -129,6 +153,26 @@ public class Main {
             scroll = new ScrollView(0, 48, width, height - 50);
             addChild(scroll);
             list = scroll.getContent();
+            dropTargetActive = false;
+        }
+
+        @Override
+        public void customGraphics(Graphics g) {
+            super.customGraphics(g);
+            if (!dropTargetActive) {
+                return;
+            }
+            Graphics2D g2 = (Graphics2D) g;
+            int width = getWidth();
+            int height = getHeight();
+            if (width <= 1 || height <= 1) {
+                return;
+            }
+            g2.setColor(DROP_HIGHLIGHT_FILL);
+            g2.fillRoundRect(1, 1, width - 2, height - 2, 16, 16);
+            g2.setColor(DROP_HIGHLIGHT_STROKE);
+            g2.setStroke(new java.awt.BasicStroke(2.0f));
+            g2.drawRoundRect(1, 1, width - 3, height - 3, 16, 16);
         }
 
         void addTask(TaskCard card) {
@@ -177,11 +221,20 @@ public class Main {
         BaseComp getList() {
             return list;
         }
+
+        void setDropTargetActive(boolean active) {
+            if (dropTargetActive == active) {
+                return;
+            }
+            dropTargetActive = active;
+            invalidate();
+        }
     }
 
     private static class MainApp {
         private final BaseWindow window;
         private final BaseComp content;
+        private final ScrollView mainScroll;
         private final Div overlay;
         private final List<TaskColumn> columns;
 
@@ -193,14 +246,17 @@ public class Main {
         private CheckBox perfMode;
         private TextArea notes;
         private ImageComp preview;
+        private Div glass;
 
         private int taskCounter;
         private TaskCard draggingCard;
         private TaskColumn originColumn;
+        private TaskColumn activeDropTarget;
 
         MainApp(BaseWindow window) {
             this.window = window;
             this.content = window.getContent();
+            this.mainScroll = new ScrollView(0, 0, content.getWidth(), content.getHeight());
             this.overlay = new Div(0, 0, content.getWidth(), content.getHeight(), new Color(0, 0, 0, 0), 0) {
                 @Override
                 public boolean containsGlobalPoint(int globalX, int globalY) {
@@ -226,13 +282,17 @@ public class Main {
             content.addChild(preview);
             
             // Glasspane over the image to ensure readability
-            Div glass = new Div(0, 0, C_WIDTH, C_HEIGHT, new Color(20, 25, 35, 70), 0);
+            this.glass = new Div(0, 0, C_WIDTH, C_HEIGHT, new Color(20, 25, 35, 70), 0);
             content.addChild(glass);
+
+            // Added Scroll for the whole interface
+            mainScroll.setBounds(0, 0, C_WIDTH, C_HEIGHT);
+            content.addChild(mainScroll);
 
             // Modern Toolbar / Header
             toolbar = new Div(CONTENT_PADDING, CONTENT_PADDING, C_WIDTH - (CONTENT_PADDING * 2), 90,
                     new Color(30, 36, 48, 160), 16);
-            content.addChild(toolbar);
+            mainScroll.getContent().addChild(toolbar);
 
             H title = new H("Nexus Task Studio", 20, 20, 300, 28);
             title.setColor(Color.WHITE);
@@ -256,7 +316,7 @@ public class Main {
 
             // Board Container for Kanban columns
             board = new Div(CONTENT_PADDING, 100 + CONTENT_PADDING, C_WIDTH - (CONTENT_PADDING * 2), C_HEIGHT - (100 + CONTENT_PADDING * 2), new Color(0, 0, 0, 0), 0);
-            content.addChild(board);
+            mainScroll.getContent().addChild(board);
 
             int gap = 16;
             int boardWidth = board.getWidth();
@@ -282,7 +342,8 @@ public class Main {
             
             // Add a resize listener on window to adjust the background and children
             relayoutRoot();
-            window.requestRender();
+            window.invalidateAll();
+            window.requestRenderIfNeeded();
         }
 
         private void relayoutRoot() {
@@ -297,10 +358,12 @@ public class Main {
             if (preview != null) {
                 preview.setBounds(0, 0, W, H);
             }
-            // The glass pane is the 2nd child
-            BaseComp glass = content.getChildren()[1];
-            if (glass instanceof Div) {
+            if (glass != null) {
                 glass.setBounds(0, 0, W, H);
+            }
+            
+            if (mainScroll != null) {
+                mainScroll.setBounds(0, 0, W, H);
             }
 
             toolbar.setBounds(CONTENT_PADDING, CONTENT_PADDING, Math.max(700, W - (CONTENT_PADDING * 2)), 90);
@@ -310,6 +373,11 @@ public class Main {
             int boardH = Math.max(300, H - boardY - CONTENT_PADDING);
             
             board.setBounds(CONTENT_PADDING, boardY, boardW, boardH);
+
+            if (mainScroll != null) {
+                mainScroll.setContentHeight(boardY + boardH + CONTENT_PADDING);
+                mainScroll.setContentWidth(boardW + (CONTENT_PADDING * 2));
+            }
 
             int gap = 16;
             int colWidth = (boardW - (gap * 2)) / 3;
@@ -396,34 +464,96 @@ public class Main {
         }
 
         void addTaskToBacklog() {
-            Div modal = new Div(0, 0, 400, 240, new Color(255, 255, 255), 16);
-            
+            Div modal = new Div(0, 0, 540, 430, new Color(255, 255, 255), 16);
+
             H title = new H("Create New Task", 20, 16, 300, 30);
             modal.addChild(title);
-            
-            Label descLabel = new Label("Task Description (Mock Input):", 20, 56, 300, 20);
+
+            Label titleLabel = new Label("Title", 20, 58, 300, 20);
+            titleLabel.setColor(new Color(90, 98, 108));
+            modal.addChild(titleLabel);
+
+            TextField titleInput = new TextField(20, 82, 440, 38);
+            titleInput.setPlaceholder("Task title...");
+            titleInput.setMaxLength(80);
+            modal.addChild(titleInput);
+
+            Label assigneeLabel = new Label("Assignee", 20, 132, 160, 20);
+            assigneeLabel.setColor(new Color(90, 98, 108));
+            modal.addChild(assigneeLabel);
+
+            TextField assigneeInput = new TextField(20, 156, 250, 36);
+            assigneeInput.setPlaceholder("@username");
+            assigneeInput.setMaxLength(32);
+            modal.addChild(assigneeInput);
+
+            Label columnLabel = new Label("Target Column", 290, 132, 160, 20);
+            columnLabel.setColor(new Color(90, 98, 108));
+            modal.addChild(columnLabel);
+
+            SelectInput columnSelect = new SelectInput(290, 156, 230, 36);
+            columnSelect.setOptions(List.of("Backlog", "In Progress", "Done"));
+            columnSelect.setSelectedOption("Backlog");
+            modal.addChild(columnSelect);
+
+            Label descLabel = new Label("Description", 20, 206, 300, 20);
             descLabel.setColor(new Color(100, 110, 120));
             modal.addChild(descLabel);
-            
-            TextArea mockInput = new TextArea("My awesome new task idea...\n(Keyboard input coming soon)", 20, 86, 360, 80);
-            modal.addChild(mockInput);
-            
-            Button confirmBtn = new Button("Add Task", 250, 186, 130, 36, () -> {
-                TaskColumn backlog = columns.get(0);
-                TaskCard card = new TaskCard(this, "New Task #" + taskCounter++, "Created from Modal",
-                        backlog.getWidth() - 40, 96);
-                backlog.addTask(card);
+
+            TextAreaInput descInput = new TextAreaInput(20, 230, 500, 130);
+            descInput.setPlaceholder("Describe the task details...");
+            descInput.setMaxLength(400);
+            modal.addChild(descInput);
+
+            CheckBox priorityCheck = new CheckBox("High priority", 20, 372, 170, 30, false);
+            modal.addChild(priorityCheck);
+
+            Button confirmBtn = new Button("Add Task", 390, 372, 130, 36, () -> {
+                String titleValue = titleInput.getText().trim();
+                if (titleValue.isEmpty()) {
+                    titleValue = "New Task #" + taskCounter;
+                }
+
+                String descValue = descInput.getText().trim();
+                if (descValue.isEmpty()) {
+                    descValue = "Created from modal form";
+                }
+
+                String assignee = assigneeInput.getText().trim();
+                if (!assignee.isEmpty()) {
+                    descValue = descValue + " | " + assignee;
+                }
+                if (priorityCheck.isChecked()) {
+                    descValue = "[HIGH] " + descValue;
+                }
+
+                TaskColumn targetColumn = columnFromSelect(columnSelect.getSelectedOption());
+                TaskCard card = new TaskCard(this, titleValue, descValue,
+                        targetColumn.getWidth() - 40, 96);
+                taskCounter++;
+                targetColumn.addTask(card);
                 window.closeTopLayer();
             });
             confirmBtn.setBackground(new Color(46, 177, 105));
             modal.addChild(confirmBtn);
-            
-            Button cancelBtn = new Button("Cancel", 140, 186, 100, 36, window::closeTopLayer);
+
+            Button cancelBtn = new Button("Cancel", 280, 372, 100, 36, window::closeTopLayer);
             cancelBtn.setBackground(new Color(200, 205, 215));
             cancelBtn.setForeground(new Color(80, 80, 80));
             modal.addChild(cancelBtn);
 
             window.openModal(modal);
+        }
+
+        private TaskColumn columnFromSelect(String selected) {
+            if (selected == null) {
+                return columns.get(0);
+            }
+            return switch (selected) {
+                case "In Progress" -> columns.get(1);
+                case "Done" -> columns.get(2);
+                default -> columns.get(0);
+            };
         }
 
         void deleteTask(TaskCard card) {
@@ -436,7 +566,7 @@ public class Main {
             if (card.getParent() == overlay) {
                 overlay.removeChild(card);
             }
-            window.requestRender();
+            window.requestRenderIfNeeded();
         }
 
         void startDrag(TaskCard card) {
@@ -450,14 +580,19 @@ public class Main {
             originColumn.removeTask(card);
             overlay.addChild(card);
             card.setBounds(gx - content.getGlobalX(), gy - content.getGlobalY(), card.getWidth(), card.getHeight());
-            window.requestRender();
+            setActiveDropTarget(originColumn);
+            window.requestRenderIfNeeded();
         }
 
         void moveDrag(TaskCard card, int globalX, int globalY) {
             if (draggingCard != card || card.getParent() != overlay) {
                 return;
             }
-            card.setBounds(globalX - content.getGlobalX(), globalY - content.getGlobalY(), card.getWidth(),
+            Point constrained = clampDragTopLeft(globalX, globalY, card.getWidth(), card.getHeight());
+                int centerX = constrained.x + (card.getWidth() / 2);
+                int centerY = constrained.y + (card.getHeight() / 2);
+                setActiveDropTarget(findColumnAt(centerX, centerY));
+            card.setBounds(constrained.x - content.getGlobalX(), constrained.y - content.getGlobalY(), card.getWidth(),
                     card.getHeight());
         }
 
@@ -465,15 +600,51 @@ public class Main {
             if (draggingCard != card) {
                 return;
             }
-            TaskColumn target = findColumnAt(dropX, dropY);
+
+            Point constrainedTopLeft = clampDragTopLeft(card.getGlobalX(), card.getGlobalY(), card.getWidth(),
+                    card.getHeight());
+            int centerX = constrainedTopLeft.x + (card.getWidth() / 2);
+            int centerY = constrainedTopLeft.y + (card.getHeight() / 2);
+
+            TaskColumn target = findColumnAt(centerX, centerY);
             if (target == null) {
                 target = originColumn != null ? originColumn : columns.get(0);
             }
+            setActiveDropTarget(target);
             overlay.removeChild(card);
-            target.insertTaskAt(card, target.localYInList(dropY));
+            target.insertTaskAt(card, target.localYInList(centerY));
             draggingCard = null;
             originColumn = null;
-            window.requestRender();
+            setActiveDropTarget(null);
+            window.requestRenderIfNeeded();
+        }
+
+        private void setActiveDropTarget(TaskColumn target) {
+            if (activeDropTarget == target) {
+                return;
+            }
+            if (activeDropTarget != null) {
+                activeDropTarget.setDropTargetActive(false);
+            }
+            activeDropTarget = target;
+            if (activeDropTarget != null) {
+                activeDropTarget.setDropTargetActive(true);
+            }
+        }
+
+        private Point clampDragTopLeft(int globalX, int globalY, int cardWidth, int cardHeight) {
+            Rectangle bounds = getDragBoundsGlobal();
+            int clampedX = Math.max(bounds.x, Math.min(globalX, bounds.x + bounds.width - cardWidth));
+            int clampedY = Math.max(bounds.y, Math.min(globalY, bounds.y + bounds.height - cardHeight));
+            return new Point(clampedX, clampedY);
+        }
+
+        private Rectangle getDragBoundsGlobal() {
+            int gx = board.getGlobalX();
+            int gy = board.getGlobalY();
+            int w = Math.max(1, board.getWidth());
+            int h = Math.max(1, board.getHeight());
+            return new Rectangle(gx, gy, w, h);
         }
 
         private TaskColumn findCardColumn(TaskCard card) {

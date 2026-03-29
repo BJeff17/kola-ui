@@ -30,16 +30,16 @@ public class Button extends BaseComp {
                 return;
             }
             pressed = true;
-            event.getWindow().requestRender();
+            invalidate();
         });
 
         getEventManager().register(UiEvent.Type.POINTER_UP, (component, event) -> {
-            boolean shouldClick = pressed && event.getTarget() == this;
+            boolean shouldClick = pressed && containsGlobalPoint(event.getX(), event.getY());
             pressed = false;
-            if (shouldClick && onClick != null) {
-                onClick.run();
+            if (shouldClick && this.onClick != null) {
+                this.onClick.run();
             }
-            event.getWindow().requestRender();
+            invalidate();
         });
     }
 

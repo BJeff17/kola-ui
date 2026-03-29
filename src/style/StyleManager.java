@@ -6,7 +6,7 @@ import layout.*;
 import main.BaseComp;
 
 public class StyleManager {
-    private final BaseLayoutEngine layoutEngine;
+    private BaseLayoutEngine layoutEngine;
     private Color color = Color.WHITE;
     private int borderRadius = 0;
     private int width = 0;
@@ -45,10 +45,20 @@ public class StyleManager {
         this.numCols = numCols;
     }
 
+    public void setLayoutEngineType(String display) {
+        this.layoutEngine = createLayoutEngine(display);
+    }
+
     public StyleManager(StyleManager parentStyle) {
         this.color = parentStyle.color;
         this.layoutEngine = createLayoutEngine("block");
 
+    }
+
+    public StyleManager(String tailwindClasses) {
+        this.color = new Color(0,0,0,0);
+        this.layoutEngine = new layout.BlockLayoutEngine();
+        TailwindParser.applyTailwind(this, tailwindClasses);
     }
 
     private static BaseLayoutEngine createLayoutEngine(String display) {
@@ -144,4 +154,9 @@ public class StyleManager {
     public int getNumCols() {
         return numCols;
     }
+
+    public void setColor(Color color) { this.color = color; }
+    public void setBorderRadius(int r) { this.borderRadius = r; }
+    public void setWidth(int w) { this.width = w; }
+    public void setHeight(int h) { this.height = h; }
 }

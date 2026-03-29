@@ -23,7 +23,7 @@ public class CheckBox extends BaseComp {
                 return;
             }
             checked = !checked;
-            event.getWindow().requestRender();
+            invalidate();
         });
     }
 

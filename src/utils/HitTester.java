@@ -23,7 +23,7 @@ public class HitTester {
      */
 
     public BaseComp findBaseComp(int x, int y, BaseComp root) {
-        if (root == null || !isHit(x, y, root)) {
+        if (root == null || !root.isVisible() || !isHit(x, y, root)) {
             return null;
         }
 
@@ -33,6 +33,9 @@ public class HitTester {
                 BaseComp child = children[i];
                 if (child == null)
                     continue;
+                if (!child.isVisible()) {
+                    continue;
+                }
 
                 BaseComp target = findBaseComp(x, y, child);
                 if (target != null) {
