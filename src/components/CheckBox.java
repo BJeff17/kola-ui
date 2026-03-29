@@ -37,14 +37,15 @@ public class CheckBox extends BaseComp {
 
         g2.setColor(Color.WHITE);
         g2.fillRoundRect(boxX, boxY, boxSize, boxSize, 6, 6);
-        
+
         if (checked) {
             g2.setColor(new Color(66, 133, 244)); // Nice blue
             g2.fillRoundRect(boxX, boxY, boxSize, boxSize, 6, 6);
-            
+
             // Draw checkmark
             g2.setColor(Color.WHITE);
-            g2.setStroke(new java.awt.BasicStroke(2.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+            g2.setStroke(
+                    new java.awt.BasicStroke(2.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
             g2.drawLine(boxX + 4, boxY + 9, boxX + 8, boxY + 13);
             g2.drawLine(boxX + 8, boxY + 13, boxX + 14, boxY + 5);
         } else {

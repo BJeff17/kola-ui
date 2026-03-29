@@ -33,7 +33,8 @@ public class UiEvent {
         this(type, x, y, screenX, screenY, button, wheelRotation, false, 1);
     }
 
-    public UiEvent(Type type, int x, int y, int screenX, int screenY, int button, double wheelRotation, boolean shiftDown) {
+    public UiEvent(Type type, int x, int y, int screenX, int screenY, int button, double wheelRotation,
+            boolean shiftDown) {
         this(type, x, y, screenX, screenY, button, wheelRotation, shiftDown, 1);
     }
 

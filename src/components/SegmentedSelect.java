@@ -28,7 +28,8 @@ public class SegmentedSelect extends BaseComp {
                 return;
             }
             int lx = toLocalX(event.getX());
-            int segment = Math.max(0, Math.min(options.size() - 1, (int) ((lx / (double) Math.max(1, getWidth())) * options.size())));
+            int segment = Math.max(0,
+                    Math.min(options.size() - 1, (int) ((lx / (double) Math.max(1, getWidth())) * options.size())));
             setSelectedIndex(segment, true);
             event.stopPropagation();
         });

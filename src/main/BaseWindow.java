@@ -136,16 +136,14 @@ public class BaseWindow extends BaseComp {
     @Override
     public void paint(Graphics g) {
         if (root != null) {
-            root.paint(g);
+            root.paint(g);// cette ligne est le seul point de friction entre mon système de rendu et Swing, je dois m'assurer que tout le dessin se fasse à ce moment exact.
         }
     }
 
     public void show() {
-        SwingUtilities.invokeLater(() -> {
-            frame.setVisible(true);
-            startRenderLoopIfNeeded();
-            requestRender();
-        });
+        frame.setVisible(true);
+        startRenderLoopIfNeeded();
+        requestRender();
     }
 
     public void dispose() {

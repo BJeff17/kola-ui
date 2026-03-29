@@ -10,7 +10,8 @@ public class LiveClockLabel extends Label {
 
     public LiveClockLabel(int x, int y, int width, int height, String pattern) {
         super("", x, y, width, height);
-        this.formatter = DateTimeFormatter.ofPattern(pattern == null || pattern.isBlank() ? "dd/MM/yyyy HH:mm:ss" : pattern);
+        this.formatter = DateTimeFormatter
+                .ofPattern(pattern == null || pattern.isBlank() ? "dd/MM/yyyy HH:mm:ss" : pattern);
         this.timer = new Timer(250, e -> tick());
         this.timer.setRepeats(true);
         tick();

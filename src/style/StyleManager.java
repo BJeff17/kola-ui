@@ -56,7 +56,7 @@ public class StyleManager {
     }
 
     public StyleManager(String tailwindClasses) {
-        this.color = new Color(0,0,0,0);
+        this.color = new Color(0, 0, 0, 0);
         this.layoutEngine = new layout.BlockLayoutEngine();
         TailwindParser.applyTailwind(this, tailwindClasses);
     }
@@ -155,8 +155,19 @@ public class StyleManager {
         return numCols;
     }
 
-    public void setColor(Color color) { this.color = color; }
-    public void setBorderRadius(int r) { this.borderRadius = r; }
-    public void setWidth(int w) { this.width = w; }
-    public void setHeight(int h) { this.height = h; }
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    public void setBorderRadius(int r) {
+        this.borderRadius = r;
+    }
+
+    public void setWidth(int w) {
+        this.width = w;
+    }
+
+    public void setHeight(int h) {
+        this.height = h;
+    }
 }

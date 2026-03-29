@@ -4,10 +4,10 @@ import components.Div;
 import components.H;
 import components.ImageComp;
 import components.Label;
-import components.SelectInput;
 import components.ScrollView;
-import components.TextAreaInput;
+import components.SelectInput;
 import components.TextArea;
+import components.TextAreaInput;
 import components.TextField;
 import event.UiEvent;
 import java.awt.Color;
@@ -272,15 +272,16 @@ public class Main {
         private void buildUI() {
             int C_WIDTH = content.getWidth();
             int C_HEIGHT = content.getHeight();
-            
+
             // Full screen background for main window content
-            content.setStyleManager(new style.StyleManager(new Color(245, 246, 248), 0, C_WIDTH, C_HEIGHT, 0, 0, "absolute"));
-            
+            content.setStyleManager(
+                    new style.StyleManager(new Color(245, 246, 248), 0, C_WIDTH, C_HEIGHT, 0, 0, "absolute"));
+
             // Background Image covering everything with a dark glass effect
             preview = new ImageComp(DEMO_IMAGE_PATH, 0, 0, C_WIDTH, C_HEIGHT);
             preview.setAlpha(0.95f);
             content.addChild(preview);
-            
+
             // Glasspane over the image to ensure readability
             this.glass = new Div(0, 0, C_WIDTH, C_HEIGHT, new Color(20, 25, 35, 70), 0);
             content.addChild(glass);
@@ -315,7 +316,8 @@ public class Main {
             toolbar.addChild(perfMode);
 
             // Board Container for Kanban columns
-            board = new Div(CONTENT_PADDING, 100 + CONTENT_PADDING, C_WIDTH - (CONTENT_PADDING * 2), C_HEIGHT - (100 + CONTENT_PADDING * 2), new Color(0, 0, 0, 0), 0);
+            board = new Div(CONTENT_PADDING, 100 + CONTENT_PADDING, C_WIDTH - (CONTENT_PADDING * 2),
+                    C_HEIGHT - (100 + CONTENT_PADDING * 2), new Color(0, 0, 0, 0), 0);
             mainScroll.getContent().addChild(board);
 
             int gap = 16;
@@ -339,7 +341,7 @@ public class Main {
             content.addChild(overlay);
 
             seedTasks(backlog, doing, done);
-            
+
             // Add a resize listener on window to adjust the background and children
             relayoutRoot();
             window.invalidateAll();
@@ -361,7 +363,7 @@ public class Main {
             if (glass != null) {
                 glass.setBounds(0, 0, W, H);
             }
-            
+
             if (mainScroll != null) {
                 mainScroll.setBounds(0, 0, W, H);
             }
@@ -371,7 +373,7 @@ public class Main {
             int boardY = toolbar.getY() + toolbar.getHeight() + CONTENT_PADDING;
             int boardW = Math.max(800, W - (CONTENT_PADDING * 2));
             int boardH = Math.max(300, H - boardY - CONTENT_PADDING);
-            
+
             board.setBounds(CONTENT_PADDING, boardY, boardW, boardH);
 
             if (mainScroll != null) {
@@ -589,9 +591,9 @@ public class Main {
                 return;
             }
             Point constrained = clampDragTopLeft(globalX, globalY, card.getWidth(), card.getHeight());
-                int centerX = constrained.x + (card.getWidth() / 2);
-                int centerY = constrained.y + (card.getHeight() / 2);
-                setActiveDropTarget(findColumnAt(centerX, centerY));
+            int centerX = constrained.x + (card.getWidth() / 2);
+            int centerY = constrained.y + (card.getHeight() / 2);
+            setActiveDropTarget(findColumnAt(centerX, centerY));
             card.setBounds(constrained.x - content.getGlobalX(), constrained.y - content.getGlobalY(), card.getWidth(),
                     card.getHeight());
         }
