@@ -35,12 +35,13 @@ A modular, extensible Java UI rendering library for building custom desktop appl
 
 ---
 
+
 ## Getting Started
 
 ### 1. Add to Your Project
 
-- **Manual**: Copy the `src/` folder into your project, or build the library as a JAR (see [Integration & Embedding](#integration--embedding)).
-- **Module**: (see [Making a Java Module](#making-a-java-module))
+- **JAR**: Utilise le fichier `kola-ui.jar` (voir [Integration & Embedding](#integration--embedding)).
+- **Module**: (voir [Making a Java Module](#making-a-java-module))
 
 ### 2. Minimal Example
 
@@ -48,9 +49,9 @@ A modular, extensible Java UI rendering library for building custom desktop appl
 import main.BaseWindow;
 import components.Button;
 
-public class HelloUI {
+public class HelloKolaUI {
     public static void main(String[] args) {
-        BaseWindow window = new BaseWindow("Hello UI", 400, 300);
+        BaseWindow window = new BaseWindow("Hello Kola UI", 400, 300);
         Button btn = new Button("Click me", () -> System.out.println("Clicked!"));
         window.setContent(btn);
         window.show();
@@ -173,13 +174,14 @@ win.show();
 
 ## Integration & Embedding
 
-- **As Source**: Copy `src/` into your project.
-- **As JAR**: Compile with `javac -d output $(find src -name '*.java')` then package:
-  ```sh
-  jar cf ui-renderer.jar -C output .
-  ```
-- **As Java Module**: See [Making a Java Module](#making-a-java-module).
-- **Dependencies**: Pure Java SE, no external dependencies.
+- **As Source**: Copy `src/kola.ui/` dans le dossier source de ton projet.
+- **As JAR**: Utilise le fichier `kola-ui.jar` généré avec :
+    ```sh
+    javac -d output --module-source-path src $(find src/kola.ui -name '*.java')
+    jar --create --file kola-ui.jar --main-class=main.BaseWindow -C output .
+    ```
+- **As Java Module**: Voir [Making a Java Module](#making-a-java-module).
+- **Dependencies**: Pure Java SE, aucune dépendance externe.
 
 ---
 
@@ -207,10 +209,11 @@ MIT License (see LICENSE file)
 
 ## Making a Java Module
 
-1. Add a `module-info.java` at the root of `src/`:
+
+1. Le fichier `module-info.java` est déjà présent dans `src/kola.ui/` :
 
 ```java
-module ui.renderer {
+module kola.ui {
     exports main;
     exports components;
     exports event;
@@ -220,23 +223,23 @@ module ui.renderer {
 }
 ```
 
-2. Compile with module support:
+2. Compile avec le support module :
 
 ```sh
-javac -d output --module-source-path src $(find src -name '*.java')
+javac -d output --module-source-path src $(find src/kola.ui -name '*.java')
 ```
 
-3. Package as a modular JAR:
+3. Package en JAR modulaire :
 
 ```sh
-jar --create --file ui-renderer.jar --main-class=main.BaseWindow -C output .
+jar --create --file kola-ui.jar --main-class=main.BaseWindow -C output .
 ```
 
-4. Use in your project:
+4. Utilise dans ton projet :
 
 ```java
 module my.app {
-    requires ui.renderer;
+    requires kola.ui;
 }
 ```
 
