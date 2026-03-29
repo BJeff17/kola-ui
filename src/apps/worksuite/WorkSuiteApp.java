@@ -9,6 +9,7 @@ import components.H;
 import components.Label;
 import components.LiveClockLabel;
 import components.NavMenuBar;
+import components.ResizableDiv;
 import components.ScrollView;
 import components.SegmentedSelect;
 import components.SelectInput;
@@ -439,6 +440,20 @@ public class WorkSuiteApp {
             });
             runtimeHelp.setBackground(new Color(60, 90, 130));
             view.addChild(runtimeHelp);
+
+            ResizableDiv resizablePanel = new ResizableDiv(370, 56, 260, 150, new Color(242, 247, 255), 12);
+            resizablePanel.setMinSize(180, 100);
+            view.addChild(resizablePanel);
+
+            Label resizeTitle = new Label("Panneau redimensionnable", 12, 10, 220, 20);
+            resizeTitle.setFont(new Font("Dialog", Font.BOLD, 13));
+            resizeTitle.setColor(new Color(34, 56, 87));
+            resizablePanel.addChild(resizeTitle);
+
+            Label resizeHint = new Label("Prends le coin bas-droite pour redimensionner.", 12, 34, 236, 20);
+            resizeHint.setColor(new Color(90, 106, 128));
+            resizeHint.setFont(new Font("Dialog", Font.PLAIN, 12));
+            resizablePanel.addChild(resizeHint);
 
             return view;
         }

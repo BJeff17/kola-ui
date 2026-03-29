@@ -70,12 +70,14 @@ public class BaseWindow extends BaseComp {
     private Point resizeStartMouse;
     private Rectangle resizeStartBounds;
     private final Map<BaseComp, Consumer<BaseWindow>> systemButtons;
+    private final Map<BaseComp, String> systemButtonHints;
     private final List<Runnable> resizeListeners;
     private final List<BaseWindow> childWindows;
 
     private BaseComp closeButton;
     private BaseComp minimizeButton;
     private BaseComp maximizeButton;
+    private BaseComp hoveredSystemButton;
     private BaseComp focusedComponent;
 
     private Timer activeRenderTimer;
@@ -88,6 +90,7 @@ public class BaseWindow extends BaseComp {
     private int lastDirtyArea;
     private boolean lastFrameFullRedraw;
     private final LinkedList<String> debugEventLines;
+    private java.awt.image.BufferedImage backBuffer;
     private static final int MAX_DEBUG_EVENT_LINES = 12;
 
     public BaseWindow(String title, int width, int height, int fps) {
@@ -100,8 +103,10 @@ public class BaseWindow extends BaseComp {
         this.canvas = createCanvas();
         this.activeResizeEdge = ResizeEdge.NONE;
         this.systemButtons = new HashMap<>();
+        this.systemButtonHints = new HashMap<>();
         this.resizeListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
         this.childWindows = new java.util.concurrent.CopyOnWriteArrayList<>();
+        this.hoveredSystemButton = null;
         this.repaintScheduled = false;
         this.debugOverlayEnabled = true;
         this.debugEventOverlayEnabled = false;
@@ -136,14 +141,24 @@ public class BaseWindow extends BaseComp {
     @Override
     public void paint(Graphics g) {
         if (root != null) {
-            root.paint(g);// cette ligne est le seul point de friction entre mon système de rendu et Swing, je dois m'assurer que tout le dessin se fasse à ce moment exact.
+            root.paint(g);// cette ligne est le seul point de friction entre mon système de rendu et
+                          // Swing, je dois m'assurer que tout le dessin se fasse à ce moment exact.
         }
     }
 
     public void show() {
         frame.setVisible(true);
+        canvas.requestFocusInWindow();
         startRenderLoopIfNeeded();
         requestRender();
+    }
+
+    public void focusComponent(BaseComp component) {
+        if (component != null && !component.isFocusable()) {
+            return;
+        }
+        setFocusedComponent(component);
+        canvas.requestFocusInWindow();
     }
 
     public void dispose() {
@@ -311,10 +326,9 @@ public class BaseWindow extends BaseComp {
         }
     }
 
-    private java.awt.image.BufferedImage backBuffer;
 
     private JPanel createCanvas() {
-        JPanel p = new JPanel() {
+        JPanel p = new JPanel() { 
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -382,6 +396,7 @@ public class BaseWindow extends BaseComp {
                 if (debugEventOverlayEnabled) {
                     drawEventDebugOverlay(g2d, w, h);
                 }
+                drawWindowControlHint(g2d, w, h);
                 g2d.dispose();
 
                 if (transparentWindow) {
@@ -538,6 +553,38 @@ public class BaseWindow extends BaseComp {
         }
     }
 
+    private void drawWindowControlHint(Graphics2D g2, int w, int h) {
+        BaseComp hovered = hoveredSystemButton;
+        if (hovered == null) {
+            return;
+        }
+        String hint = systemButtonHints.get(hovered);
+        if (hint == null || hint.isBlank()) {
+            return;
+        }
+
+        java.awt.Font original = g2.getFont();
+        g2.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 12));
+        int textWidth = g2.getFontMetrics().stringWidth(hint);
+        int boxW = textWidth + 18;
+        int boxH = 24;
+
+        int hx = hovered.getGlobalX() + (hovered.getWidth() / 2);
+        int by = hovered.getGlobalY() + hovered.getHeight() + 10;
+        int bx = hx - (boxW / 2);
+        bx = Math.max(8, Math.min(bx, Math.max(8, w - boxW - 8)));
+        by = Math.max(8, Math.min(by, Math.max(8, h - boxH - 8)));
+
+        g2.setColor(new Color(15, 23, 42, 215));
+        g2.fillRoundRect(bx, by, boxW, boxH, 10, 10);
+        g2.setColor(new Color(148, 163, 184, 220));
+        g2.drawRoundRect(bx, by, boxW, boxH, 10, 10);
+        g2.setColor(new Color(241, 245, 249));
+        g2.drawString(hint, bx + 9, by + 16);
+
+        g2.setFont(original);
+    }
+
     private void recordDebugEvent(String msg) {
         if (!debugEventOverlayEnabled) {
             return;
@@ -589,7 +636,7 @@ public class BaseWindow extends BaseComp {
         };
         rootComp.setStyleManager(
                 // Root must keep explicit child bounds (header/content/layerHost) for proper
-                // z-layering.
+                // z-layering. I may add in the future a "forceChildBounds" mode to StyleManager to avoid this kind of special case.
                 new StyleManager(new Color(232, 232, 232), FRAME_RADIUS, width, height, 0, 0, "absolute"));
         rootComp.setBounds(0, 0, width, height);
         return rootComp;
@@ -616,10 +663,10 @@ public class BaseWindow extends BaseComp {
         this.header.setStyleManager(
                 new StyleManager(new Color(235, 235, 235), 0, width, DEFAULT_HEADER_HEIGHT, 0, 0, "absolute"));
 
-        this.closeButton = createSystemButton(0, new Color(255, 95, 86), w -> w.dispose());
-        this.minimizeButton = createSystemButton(0, new Color(255, 189, 46),
+        this.closeButton = createSystemButton(0, new Color(255, 95, 86), "Fermer", w -> w.dispose());
+        this.minimizeButton = createSystemButton(0, new Color(255, 189, 46), "Minimiser",
                 w -> w.getNativeFrame().setState(JFrame.ICONIFIED));
-        this.maximizeButton = createSystemButton(0, new Color(39, 201, 63), w -> {
+        this.maximizeButton = createSystemButton(0, new Color(39, 201, 63), "Maximiser / Restaurer", w -> {
             if ((w.getNativeFrame().getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH) {
                 w.getNativeFrame().setExtendedState(JFrame.NORMAL);
             } else {
@@ -634,7 +681,7 @@ public class BaseWindow extends BaseComp {
         return this.header;
     }
 
-    private BaseComp createSystemButton(int x, Color color, Consumer<BaseWindow> action) {
+    private BaseComp createSystemButton(int x, Color color, String hint, Consumer<BaseWindow> action) {
         BaseComp button = new BaseComp(null) {
             @Override
             public void customGraphics(Graphics g) {
@@ -646,7 +693,16 @@ public class BaseWindow extends BaseComp {
         };
         button.setBounds(x, 12, 12, 12);
         systemButtons.put(button, action);
+        systemButtonHints.put(button, hint == null ? "Action" : hint);
         return button;
+    }
+
+    private void setHoveredSystemButton(BaseComp button) {
+        if (hoveredSystemButton == button) {
+            return;
+        }
+        hoveredSystemButton = button;
+        requestRenderIfNeeded();
     }
 
     private void repositionHeaderButtons(int headerWidth) {
@@ -779,8 +835,10 @@ public class BaseWindow extends BaseComp {
             public void mouseMoved(MouseEvent e) {
                 BaseComp hit = hitTester.findBaseComp(e.getX(), e.getY(), root);
                 if (systemButtons.containsKey(hit)) {
-                    changeCursor(java.awt.Cursor.DEFAULT_CURSOR);
+                    setHoveredSystemButton(hit);
+                    changeCursor(java.awt.Cursor.HAND_CURSOR);
                 } else if (activeResizeEdge == ResizeEdge.NONE) {
+                    setHoveredSystemButton(null);
                     if (hit != null && hit.getCursor() != java.awt.Cursor.DEFAULT_CURSOR) {
                         changeCursor(hit.getCursor());
                     } else if (hit != null && hit.isDraggable()) {
@@ -788,8 +846,15 @@ public class BaseWindow extends BaseComp {
                     } else {
                         updateResizeCursor(e.getX(), e.getY());
                     }
+                } else {
+                    setHoveredSystemButton(null);
                 }
                 dispatchPointerEvent(Type.POINTER_MOVE, e);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                setHoveredSystemButton(null);
             }
 
             @Override

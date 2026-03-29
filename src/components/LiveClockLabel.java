@@ -12,7 +12,7 @@ public class LiveClockLabel extends Label {
         super("", x, y, width, height);
         this.formatter = DateTimeFormatter
                 .ofPattern(pattern == null || pattern.isBlank() ? "dd/MM/yyyy HH:mm:ss" : pattern);
-        this.timer = new Timer(250, e -> tick());
+        this.timer = new Timer(800, e -> tick());
         this.timer.setRepeats(true);
         tick();
         this.timer.start();
