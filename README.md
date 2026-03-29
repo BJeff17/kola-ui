@@ -35,7 +35,6 @@ A modular, extensible Java UI rendering library for building custom desktop appl
 
 ---
 
-
 ## Getting Started
 
 ### 1. Add to Your Project
@@ -176,10 +175,10 @@ win.show();
 
 - **As Source**: Copy `src/kola.ui/` dans le dossier source de ton projet.
 - **As JAR**: Utilise le fichier `kola-ui.jar` généré avec :
-    ```sh
-    javac -d output --module-source-path src $(find src/kola.ui -name '*.java')
-    jar --create --file kola-ui.jar --main-class=main.BaseWindow -C output .
-    ```
+  ```sh
+  javac -d output --module-source-path src $(find src/kola.ui -name '*.java')
+  jar --create --file kola-ui.jar --main-class=main.BaseWindow -C output .
+  ```
 - **As Java Module**: Voir [Making a Java Module](#making-a-java-module).
 - **Dependencies**: Pure Java SE, aucune dépendance externe.
 
@@ -208,7 +207,6 @@ MIT License (see LICENSE file)
 ---
 
 ## Making a Java Module
-
 
 1. Le fichier `module-info.java` est déjà présent dans `src/kola.ui/` :
 
