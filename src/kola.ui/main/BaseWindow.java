@@ -316,6 +316,16 @@ public class BaseWindow extends BaseComp {
         return fps;
     }
 
+    public void setDebugOverlayEnabled(boolean enabled) {
+        this.debugOverlayEnabled = enabled;
+        requestRenderIfNeeded();
+    }
+
+    public void setDebugEventOverlayEnabled(boolean enabled) {
+        this.debugEventOverlayEnabled = enabled;
+        requestRenderIfNeeded();
+    }
+
     public void capturePointer(BaseComp component) {
         this.capturedPointer = component;
     }
