@@ -50,9 +50,9 @@ import components.Button;
 
 public class HelloKolaUI {
     public static void main(String[] args) {
-        BaseWindow window = new BaseWindow("Hello Kola UI", 400, 300);
+        BaseWindow window = new BaseWindow("Hello Kola UI",0,0, 400, 300);
         Button btn = new Button("Click me", () -> System.out.println("Clicked!"));
-        window.setContent(btn);
+        window.addChild(btn);
         window.show();
     }
 }
