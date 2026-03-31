@@ -1,8 +1,8 @@
 package apps.snake;
 
+import components.Div;
 import components.H;
 import components.Label;
-import components.Div;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
