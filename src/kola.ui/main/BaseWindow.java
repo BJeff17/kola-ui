@@ -92,7 +92,9 @@ public class BaseWindow extends BaseComp {
     private final LinkedList<String> debugEventLines;
     private java.awt.image.BufferedImage backBuffer;
     private static final int MAX_DEBUG_EVENT_LINES = 12;
-
+    public BaseWindow(String title, int width, int height){
+    BaseWindow(title, width, height, 0);
+    }
     public BaseWindow(String title, int width, int height, int fps) {
         super(null);
         this.fps = Math.max(0, fps);
