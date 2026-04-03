@@ -305,7 +305,7 @@ public class TailwindParser {
             double alpha = Double.parseDouble(parts[3].trim());
             int a = clamp255((int) Math.round(alpha <= 1.0 ? alpha * 255.0 : alpha));
             return new Color(r, g, b, a);
-        } catch (Exception ignored) {
+        } catch (NumberFormatException ignored) {
             return null;
         }
     }

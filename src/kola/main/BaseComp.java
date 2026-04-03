@@ -229,7 +229,7 @@ public class BaseComp {
         if (this.styleManager == null) {
             this.styleManager = new StyleManager(tailwindClasses);
         } else {
-            style.TailwindParser.applyTailwind(this.styleManager, tailwindClasses);
+            kola.style.TailwindParser.applyTailwind(this.styleManager, tailwindClasses);
         }
     }
 

@@ -1,3 +1,4 @@
 # Java build artifacts
 *.class
 output/
+*.sh

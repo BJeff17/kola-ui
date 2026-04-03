@@ -57,8 +57,8 @@ public class StyleManager {
 
     public StyleManager(String tailwindClasses) {
         this.color = new Color(0, 0, 0, 0);
-        this.layoutEngine = new layout.BlockLayoutEngine();
-        TailwindParser.applyTailwind(this, tailwindClasses);
+        this.layoutEngine = new kola.layout.BlockLayoutEngine();
+        kola.style.TailwindParser.applyTailwind(this, tailwindClasses);
     }
 
     private static BaseLayoutEngine createLayoutEngine(String display) {
