@@ -1,8 +1,8 @@
 package apps.snake;
 
-import components.Div;
-import components.H;
-import components.Label;
+import kola.components.Div;
+import kola.components.H;
+import kola.components.Label;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -12,8 +12,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 import javax.swing.Timer;
-import main.BaseComp;
-import main.BaseWindow;
+import kola.main.BaseComp;
+import kola.main.BaseWindow;
 
 public class SnakeGameApp {
     private enum Difficulty {

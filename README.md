@@ -45,8 +45,8 @@ A modular, extensible Java UI rendering library for building custom desktop appl
 ### 2. Minimal Example
 
 ```java
-import main.BaseWindow;
-import components.Button;
+import kola.main.BaseWindow;
+import kola.components.Button;
 
 public class HelloKolaUI {
     public static void main(String[] args) {

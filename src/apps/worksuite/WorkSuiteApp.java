@@ -1,20 +1,20 @@
 package apps.worksuite;
 
-import components.Button;
-import components.CheckBox;
-import components.ConfirmDialog;
-import components.Div;
-import components.FormModal;
-import components.H;
-import components.Label;
-import components.LiveClockLabel;
-import components.NavMenuBar;
-import components.ResizableDiv;
-import components.ScrollView;
-import components.SegmentedSelect;
-import components.SelectInput;
-import components.TextAreaInput;
-import components.TextField;
+import kola.components.Button;
+import kola.components.CheckBox;
+import kola.components.ConfirmDialog;
+import kola.components.Div;
+import kola.components.FormModal;
+import kola.components.H;
+import kola.components.Label;
+import kola.components.LiveClockLabel;
+import kola.components.NavMenuBar;
+import kola.components.ResizableDiv;
+import kola.components.ScrollView;
+import kola.components.SegmentedSelect;
+import kola.components.SelectInput;
+import kola.components.TextAreaInput;
+import kola.components.TextField;
 import java.awt.Color;
 import java.awt.Font;
 import java.time.LocalDateTime;
@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import main.BaseComp;
-import main.BaseWindow;
+import kola.main.BaseComp;
+import kola.main.BaseWindow;
 
 public class WorkSuiteApp {
     private enum Page {

@@ -1,16 +1,17 @@
 package apps.todoApp;
-import components.Button;
-import components.CheckBox;
-import components.Div;
-import components.H;
-import components.ImageComp;
-import components.Label;
-import components.ScrollView;
-import components.SelectInput;
-import components.TextArea;
-import components.TextAreaInput;
-import components.TextField;
-import event.UiEvent;
+
+import kola.components.Button;
+import kola.components.CheckBox;
+import kola.components.Div;
+import kola.components.H;
+import kola.components.ImageComp;
+import kola.components.Label;
+import kola.components.ScrollView;
+import kola.components.SelectInput;
+import kola.components.TextArea;
+import kola.components.TextAreaInput;
+import kola.components.TextField;
+import kola.event.UiEvent;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -19,8 +20,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-import main.BaseComp;
-import main.BaseWindow;
+import kola.main.BaseComp;
+import kola.main.BaseWindow;
 
 public class Main {
     private static final int CONTENT_PADDING = 14;

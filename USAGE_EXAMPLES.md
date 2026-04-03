@@ -1,6 +1,6 @@
 // Example: HelloKolaUI.java
-import main.BaseWindow;
-import components.Button;
+import kola.main.BaseWindow;
+import kola.components.Button;
 
 public class HelloUI {
 public static void main(String[] args) {
@@ -12,7 +12,7 @@ window.show();
 }
 
 // Example: Custom Component
-import main.BaseComp;
+import kola.main.BaseComp;
 
 public class MyBadge extends BaseComp {
 public MyBadge(String text) {
